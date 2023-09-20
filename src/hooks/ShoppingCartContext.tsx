@@ -1,4 +1,5 @@
 import { ReactNode, createContext, useContext, useState } from "react";
+import ShoppingCart from "../components/ShoppingCart";
 
 // 使用useContext钩子的步骤
 // 1.再提供数据的组件中创建一个Context对象，并将数据传递进来
@@ -6,10 +7,17 @@ import { ReactNode, createContext, useContext, useState } from "react";
 // Context对象身上有provider和consumer属性，用来传递数据
 // 2. 在需要使用数据的组件中，是useContext钩子接受数据，并使用
 type createContext = {
+  // store
   getItemQuantity: (id: number) => number;
   increaseQuantity: (id: number) => void;
   decreaseQuantity: (id: number) => void;
   removeFromCard: (id: number) => void;
+
+  // cart
+  openCart: () => void;
+  closeCart: () => void;
+  cartQuantity: number;
+  cartItems: cartItems[];
 };
 
 type cartItems = {
@@ -29,7 +37,8 @@ export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
     { id: 4, quantity: 3 },
     { id: 5, quantity: 4 },
   ]);
-  // console.log(cartItems);
+
+  // 获取store页面在上面数量的回调
   const getItemQuantity = (id: number) => {
     return cartItems.find((item) => item.id === id)?.quantity || 0;
   };
@@ -51,7 +60,7 @@ export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
   //     });
   //     setCartItems(newcartItems);
   //   }
-
+  // 增减store页面在上面数量的回调
   const increaseQuantity = (id: number) => {
     // 更新状态
     setCartItems((cartItems) => {
@@ -71,6 +80,7 @@ export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
       }
     });
   };
+  // 减少store页面在上面数量的回调
   const decreaseQuantity = (id: number) => {
     // 更新状态
     setCartItems((cartItems) => {
@@ -87,6 +97,7 @@ export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
       }
     });
   };
+  // 移除store页面在上面数量的回调
   const removeFromCard = (id: number) => {
     // 更新状态
     setCartItems((currentItems) => {
@@ -94,6 +105,21 @@ export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
       return currentItems.filter((item) => item.id !== id);
     });
   };
+
+  // 购物车产品数量的总数和
+  const cartQuantity = cartItems.reduce(
+    (quantity, item) => item.quantity + quantity,
+    0
+  );
+
+  // 打开购物车详情的回调
+  const [isOpen, setIsOpne] = useState(false);
+  const openCart = () => {
+    setIsOpne(true);
+    console.log(isOpen);
+  };
+  // 关闭购物车详情的回调
+  const closeCart = () => setIsOpne(false);
   return (
     <shoppingCartContext.Provider
       value={{
@@ -101,9 +127,14 @@ export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
         increaseQuantity,
         decreaseQuantity,
         removeFromCard,
+        openCart,
+        closeCart,
+        cartQuantity,
+        cartItems,
       }}
     >
       {children}
+      <ShoppingCart />
     </shoppingCartContext.Provider>
   );
 }
