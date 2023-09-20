@@ -1,5 +1,6 @@
 import { ReactNode, createContext, useContext, useState } from "react";
 import ShoppingCart from "../components/ShoppingCart";
+// import Test from "../components/Test";
 
 // 使用useContext钩子的步骤
 // 1.再提供数据的组件中创建一个Context对象，并将数据传递进来
@@ -17,10 +18,10 @@ type createContext = {
   openCart: () => void;
   closeCart: () => void;
   cartQuantity: number;
-  cartItems: cartItems[];
+  cartItems: CartItems[];
 };
 
-type cartItems = {
+type CartItems = {
   id: number;
   quantity: number;
 };
@@ -31,7 +32,7 @@ type ShoppingCartProviderProps = {
 };
 // 封装数据提供者的方法
 export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
-  const [cartItems, setCartItems] = useState<cartItems[]>([
+  const [cartItems, setCartItems] = useState<CartItems[]>([
     { id: 2, quantity: 1 },
     { id: 3, quantity: 2 },
     { id: 4, quantity: 3 },
@@ -134,7 +135,8 @@ export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
       }}
     >
       {children}
-      <ShoppingCart />
+      <ShoppingCart isOpen={isOpen} />
+      {/* <Test /> */}
     </shoppingCartContext.Provider>
   );
 }
