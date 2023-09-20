@@ -1,6 +1,7 @@
 import { Card, Button } from "react-bootstrap";
 import { formatCurrency } from "../utils/formatCurrency";
 import { useShoppingCart } from "../hooks/ShoppingCartContext";
+import { useState } from "react";
 
 type storeItemsProps = {
   id: number;
@@ -15,15 +16,16 @@ export default function StoreItem({
   price,
   imgUrl,
 }: storeItemsProps) {
-  const {
-    getItemQuantity,
-    increaseQuantity,
-    decreaseQuantity,
-    removeFromCard,
-  } = useShoppingCart();
+  // const {
+  //   getItemQuantity,
+  //   increaseQuantity,
+  //   decreaseQuantity,
+  //   removeFromCard,
+  // } = useShoppingCart();
   // 购物车里商品数量
-  const quantity: number = getItemQuantity(id);
-  // console.log(quantity);
+  // const quantity: number = getItemQuantity(id);
+  // const quantity = 0;
+  const [quantity, setQuatity] = useState(0);
   return (
     <Card className="h-100">
       {/* 图片 */}
@@ -46,12 +48,7 @@ export default function StoreItem({
         <div>
           {/*   格局商品数量，显示不同的按钮和内容 */}
           {quantity === 0 ? (
-            <Button
-              className="mt-auto w-100"
-              onClick={() => increaseQuantity(id)}
-            >
-              + Add to Cart
-            </Button>
+            <Button className="mt-auto w-100">+ Add to Cart</Button>
           ) : (
             <div
               className="d-flex flex-column justify-content-center align-items-center"
@@ -61,16 +58,14 @@ export default function StoreItem({
                 className="d-flex justify-content-center align-items-center"
                 style={{ gap: "1rem" }}
               >
-                <Button onClick={() => decreaseQuantity(id)}>-</Button>
+                <Button>-</Button>
                 <div>
                   <span className="fs-2 text-success me-2">{quantity}</span>
                   <span className="text-muted">in Cart</span>
                 </div>
-                <Button onClick={() => increaseQuantity(id)}>+</Button>
+                <Button>+</Button>
               </div>
-              <Button variant="danger" onClick={() => removeFromCard(id)}>
-                Remove
-              </Button>
+              <Button variant="danger">Remove</Button>
             </div>
           )}
         </div>
