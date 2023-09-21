@@ -33,10 +33,10 @@ type ShoppingCartProviderProps = {
 // 封装数据提供者的方法
 export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
   const [cartItems, setCartItems] = useState<CartItems[]>([
-    { id: 2, quantity: 1 },
-    { id: 3, quantity: 2 },
-    { id: 4, quantity: 3 },
-    { id: 5, quantity: 4 },
+    // { id: 2, quantity: 1 },
+    // { id: 3, quantity: 2 },
+    // { id: 4, quantity: 3 },
+    // { id: 5, quantity: 4 },
   ]);
 
   // 获取store页面在上面数量的回调

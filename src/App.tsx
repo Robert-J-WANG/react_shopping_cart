@@ -1,21 +1,26 @@
-import { Route, Routes } from "react-router-dom";
 import { Container } from "react-bootstrap";
-import { Home } from "./pages/Home";
-import { About } from "./pages/About";
-import { Store } from "./pages/Store";
-import Navbar from "./components/Navbar";
-import { ShoppingCartProvider } from "./hooks/ShoppingCartContext";
+import Navbar from "./component/Navbar";
+import { Route, Routes } from "react-router-dom";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import Store from "./pages/Store";
+import { ShoppingCartProvider } from "./context/ShoppingCartContext";
 
 function App() {
   return (
-    // 整个里的任何一个组件都成为了usecontext的provider
     <ShoppingCartProvider>
       <Navbar></Navbar>
-      <Container className="mb-4">
+      <Container>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/store" element={<Store />} />
+          <Route path="/" element={<Home />}>
+            HOME
+          </Route>
+          <Route path="/about" element={<About />}>
+            About
+          </Route>
+          <Route path="/store" element={<Store />}>
+            Store
+          </Route>
         </Routes>
       </Container>
     </ShoppingCartProvider>

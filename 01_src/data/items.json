@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "coffee",
+    "price": 19.99,
+    "imgUrl": "/public/images/coffee.png"
+  },
+  {
+    "id": 2,
+    "name": "energy drink",
+    "price": 29.99,
+    "imgUrl": "/public/images/energy drink.png"
+  },
+  {
+    "id": 3,
+    "name": "mango",
+    "price": 39.99,
+    "imgUrl": "/public/images/mango.png"
+  },
+  {
+    "id": 4,
+    "name": "chips",
+    "price": 49.99,
+    "imgUrl": "/public/images/chips.png"
+  },
+  {
+    "id": 5,
+    "name": "strawberry",
+    "price": 59.99,
+    "imgUrl": "/images/strawberry.png"
+  }
+]
