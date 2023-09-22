@@ -1,5 +1,6 @@
 import { ReactNode, createContext, useContext, useState } from "react";
 import { Offcanvas } from "react-bootstrap";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 
 type shoppingCartContextProps = {
   // storeItem
@@ -27,11 +28,16 @@ type CartItem = {
 };
 
 export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    // { id: 1, quantity: 1 },
-    // { id: 2, quantity: 2 },
-    // { id: 3, quantity: 4 },
-  ]);
+  // const [cartItems, setCartItems] = useState<CartItem[]>([
+  //   // { id: 1, quantity: 1 },
+  //   // { id: 2, quantity: 2 },
+  //   // { id: 3, quantity: 4 },
+  // ]);
+  //  使用useLocalStorage 钩子，保存数据到本地，刷新页面时自动填充上次的数据
+  const [cartItems, setCartItems] = useLocalStorage<CartItem[]>(
+    "shopping-cart",
+    []
+  );
   // 传递给StoreItem组件的回调函数
   const getItemQuantity = (id: number) => {
     return cartItems.find((item) => item.id === id)?.quantity || 0;

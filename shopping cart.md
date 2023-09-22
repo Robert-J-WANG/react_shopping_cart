@@ -823,9 +823,55 @@
 
 #### localStorage本地缓存的使用
 
-1. #### 
+1. ##### 封装函数useLocalStorage
 
+    ```tsx
+    export function useLocalStorage<T>(key: string, initialValue: T | (() => T)) {
+      // console.log(key, initialValue); // shopping-cart, []
+      const [value, setValue] = useState<T>(() => {
+        const jsonValue = localStorage.getItem(key);
+        // console.log(jsonValue); // []
+        if (jsonValue !== null) {
+          // console.log(jsonValue); // [{"id":1,"quantity":1}]
+          //JSON.parse 将 JSON 字符串作为输入并将其转换为 JavaScript 对象
+          // console.log(JSON.parse(jsonValue)); // [{id:1,quantity:1}]
+          return JSON.parse(jsonValue);
+        }
+    
+        if (typeof initialValue === "function") {
+          return (initialValue as () => T)();
+        } else {
+          // console.log(initialValue); //[]
+          return initialValue;
+        }
+      });
+    
+      useEffect(() => {
+        localStorage.setItem(key, JSON.stringify(value));
+      }, [key, value]);
+      // console.log(value, setValue);
+      return [value, setValue] as [typeof value, typeof setValue];
+    }
+    ```
 
-4. 
+    
+
+2. 在shoppingCartContext组件中使用useLocalStorage替换掉原先的useState钩子来更新状态
+
+    ```tsx
+    export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
+      // const [cartItems, setCartItems] = useState<CartItem[]>([
+      //   // { id: 1, quantity: 1 },
+      //   // { id: 2, quantity: 2 },
+      //   // { id: 3, quantity: 4 },
+      // ]);
+      //  使用useLocalStorage 钩子，保存数据到本地，刷新页面时自动填充上次的数据
+      const [cartItems, setCartItems] = useLocalStorage<CartItem[]>(
+        "shopping-cart",
+        []
+      );
+      // 传递给StoreItem组件的回调函数
+      ...
+    ```
 
     
