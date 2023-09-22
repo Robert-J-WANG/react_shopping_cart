@@ -2,10 +2,17 @@ import { ReactNode, createContext, useContext, useState } from "react";
 import { Offcanvas } from "react-bootstrap";
 
 type shoppingCartContextProps = {
+  // storeItem
   getItemQuantity: (id: number) => number;
   increaseItemQuantity: (id: number) => void;
   decreaseItemQuantity: (id: number) => void;
   removeFromCart: (id: number) => void;
+  // cartItem
+  totalCartQuantity: number;
+  isOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
+  cartItems: CartItem[];
 };
 const shoppingCartContext = createContext({
   //
@@ -61,6 +68,18 @@ export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
     });
   };
 
+  // 传递给cartItems组件的回调函数
+  const totalCartQuantity = cartItems.reduce((total, item) => {
+    return total + item.quantity;
+  }, 0);
+  const [isOpen, setIsOpen] = useState(false);
+  const openCart = () => {
+    setIsOpen(true);
+  };
+  const closeCart = () => {
+    setIsOpen(false);
+  };
+
   return (
     <shoppingCartContext.Provider
       value={{
@@ -68,12 +87,15 @@ export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
         increaseItemQuantity,
         decreaseItemQuantity,
         removeFromCart,
+
+        totalCartQuantity,
+        isOpen,
+        openCart,
+        closeCart,
+        cartItems,
       }}
     >
       {children}
-      {/* <Offcanvas show={"true"} onHide={"true"} placement="end">
-        <Offcanvas.Header closeButton> your Items</Offcanvas.Header>
-      </Offcanvas> */}
     </shoppingCartContext.Provider>
   );
 }

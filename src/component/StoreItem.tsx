@@ -1,5 +1,6 @@
 import { Button, Card } from "react-bootstrap";
 import { useShoppingCart } from "../context/ShoppingCartContext";
+import { formatCurrency } from "../utils/formatCurrency";
 type StoreItemProps = {
   id: number;
   name: string;
@@ -34,7 +35,7 @@ export default function StoreItem({ id, name, imgUrl, price }: StoreItemProps) {
               fontSize: ".8rem",
             }}
           >
-            {price}
+            {formatCurrency(price)}
           </span>
         </Card.Title>
         {quantity === 0 ? (

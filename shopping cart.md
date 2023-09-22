@@ -617,6 +617,210 @@
 
 #### 购物车列表的显示以及移除
 
+#### 使用bootstrap的offCanvas组件，来显示购物车中商品的详情。在shoppingCartContext组件中添加2个回调函数，用来打开和关闭offCanvas组件，使用isOpen参数的布尔值，通过setIsOpen来更新状态
+
+1. ##### shoppingCartContext组件中添加totalCartQuantity属性，并使用reduce方法获取totalCartQuantity的值
+
+    ```tsx
+    type shoppingCartContextProps = {
+      // storeItem
+      ...
+      // cartItem
+      totalCartQuantity: number;
+    };
+    ```
+
+    ```tsx
+    export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
+    ...
+    // 传递给cartItems组件的回调函数
+      const totalCartQuantity = cartItems.reduce((total, item) => {
+        return total + item.quantity;
+      }, 0);
+      return (
+        <shoppingCartContext.Provider
+          value={{
+          ...
+            totalCartQuantity,
+          }} >
+          {children}
+       </shoppingCartContext.Provider>
+      );
+    }
+    ```
+
+2. ##### navbar组件的购物车部分使用totalCartQuantity
+
+    ```tsx
+    export default function Navbar() {
+      const { totalCartQuantity } = useShoppingCart();
+      return (
+      ...
+              <div style={{width: "2rem",height: "2rem",position: "absolute",bottom: 0,right: 0,color: "white",}}
+                className="d-flex justify-content-center align-items-center bg-danger rounded-circle">
+                {totalCartQuantity}
+              </div>
+        ...
+      );
+    }
+    ```
+
+3. #####  navbar组件中添加<**ShoppingCart** />组件，用来显示购物车里商品详情
+
+    ```tsx
+    export default function Navbar() {
+      const { totalCartQuantity, openCart } = useShoppingCart();
+      return (
+        <NavbarBs sticky="top" className="bg-white shadow-sm mb-4">
+          <Container>
+          ...
+          </Container>
+          {/* 购物车详情页面 */}
+          <ShoppingCart />
+        </NavbarBs>
+      );
+    }
+    ```
+
+4. ##### 创建ShoppingCart组件，使用bootstrap的offCanvas组件，配置offCanvas的show和onHide属性，用来隐藏和显示。
+
+    ```tsx
+    export default function ShoppingCart() {
+      const { isOpen, closeCart, cartItems } = useShoppingCart();
+      return (
+        <Offcanvas show={isOpen} placement="end" onHide={closeCart}>
+          <Offcanvas.Header closeButton>Your Items</Offcanvas.Header>
+          <Offcanvas.Body className="">
+            <Stack gap={3} direction="vertical">
+              {cartItems.map((item) => {
+                return <CartItem key={item.id} {...item} />;
+              })}
+    
+              <div className="ms-auto fw-bold mt-3 fs-5">
+                Total:{" "}
+                {formatCurrency(
+                  cartItems.reduce((total, item) => {
+                    const dataItem = dataItems.find((i) => i.id === item.id);
+                    return total + (dataItem?.price || 0) * item.quantity;
+                  }, 0)
+                )}
+              </div>
+            </Stack>
+          </Offcanvas.Body>
+        </Offcanvas>
+      );
+    }
+    ```
+
+    ##### 同时，shoppingCartContext组件设置isOpen, openCart, closeCart, cartItems context元素，以及完成openCart, closeCart回调函数的逻辑
+
+     ```tsx
+     type shoppingCartContextProps = {
+       // storeItem
+      ...
+       // cartItem
+       totalCartQuantity: number;
+       isOpen: boolean;
+       openCart: () => void;
+       closeCart: () => void;
+       cartItems: CartItem[];
+     };
+     
+     export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
+       const [cartItems, setCartItems] = useState<CartItem[]>([
+         // { id: 1, quantity: 1 },
+         // { id: 2, quantity: 2 },
+         // { id: 3, quantity: 4 },
+       ]);
+       // 传递给StoreItem组件的回调函数
+      ...
+       // 传递给cartItems组件的回调函数
+       const totalCartQuantity = cartItems.reduce((total, item) => {
+         return total + item.quantity;
+       }, 0);
+       const [isOpen, setIsOpen] = useState(false);
+       const openCart = () => {
+         setIsOpen(true);
+       };
+       const closeCart = () => {
+         setIsOpen(false);
+       };
+     
+       return (
+         <shoppingCartContext.Provider
+           value={{
+           ...
+             totalCartQuantity,
+             isOpen,
+             openCart,
+             closeCart,
+             cartItems,
+           }}
+         >
+           {children}
+         </shoppingCartContext.Provider>
+       );
+     }
+     ```
+
+5. ##### navbar组件中给购物车按钮注册点击事件，绑定openCart回调函数，并使用totalCartQuantity值来判断购物车的显示和隐藏
+
+    ```tsx
+    export default function Navbar() {
+      const { totalCartQuantity, openCart } = useShoppingCart();
+      return (
+        <NavbarBs sticky="top" className="bg-white shadow-sm mb-4">
+          <Container>
+        ...
+            {totalCartQuantity === 0 ? null : (
+              <Button
+                variant="outline-primary"
+                style={{ width: "4rem", height: "4rem" }}
+                className="rounded-circle position-relative"
+                onClick={openCart}
+              >
+              ...
+              </Button>
+            )}
+          </Container>
+          {/* 购物车详情页面 */}
+          <ShoppingCart />
+        </NavbarBs>
+      );
+    }
+    ```
+
+    
+
+6. #####  完成<CartItem />组件
+
+    ```tsx
+    type CartItemProps = {
+      id: number;
+      quantity: number;
+    };
+    export default function CartItem({ id, quantity }: CartItemProps) {
+      const item = itemsData.find((item) => item.id === id);
+      const { removeFromCart } = useShoppingCart();
+      if (!item) return null;
+      return (
+        <Stack gap={2} direction="horizontal" className="d-flex align-items-center justify-content-between">
+          <img src={item.imgUrl} style={{width: "125px", height: "75px",objectFit: "contain",}} alt=""/>
+          <div className="me-auto">
+            <div>
+              {item.name}{" "}
+              {quantity > 1 && (
+                <span className="text-muted" style={{ fontSize: "0.7rem" }}>x{quantity}</span>)}
+            </div>
+            <div className="text-muted" style={{ fontSize: "0.8rem" }}>{formatCurrency(item.price)}</div>
+          </div>
+          <div>{formatCurrency(item.price * quantity)}</div>
+          <Button variant="outline-danger" size="sm" onClick={() => {removeFromCart(id);}}>&times;</Button>
+        </Stack>
+      );
+    }
+    ```
+
 #### localStorage本地缓存的使用
 
 1. #### 
