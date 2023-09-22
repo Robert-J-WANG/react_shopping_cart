@@ -54,7 +54,7 @@
     import "bootstrap/dist/css/bootstrap.min.css";
     ```
 
-3. #### import bootstrap in to the main.tsx, and use BrowserRouter
+3. #### import BrowserRouter in to the main.tsx, and use BrowserRouter
 
     ```tsx
     import { BrowserRouter } from "react-router-dom";
@@ -326,7 +326,7 @@
         ...
         ```
     
-    7. ##### 添加增减功能模块，格局cart中数量的值决定显示不同的内容
+    7. ##### 添加增减功能模块，根据cart中数量的值决定显示不同的内容
     
         ```tsx
         <Card.Body className="d-flex flex-column ">
@@ -360,11 +360,6 @@
               </Card.Body>
         ```
     
-    8. ##### 创建增删功能的函数，并添加到对应的按钮中
-    
-        ```
-        ```
-    
         
 
 ### 业务逻辑部分：
@@ -373,18 +368,260 @@
 
 1. #### 封装单独的函数组件，集成所有在商品列表组件中需要操作数据的功能模块
 
-    ##### context文件夹下创建shoppingCartContext.txs组件
+    #### context文件夹下创建shoppingCartContext.txs组件
 
-    ##### 首先创建2个基础的函数**ShoppingCartProvider** 和**useShoppingCart**，用来提供数据和其他组件使用数据
+    使用createContext方法创建一个context对象
 
+    ```tsx
+    const shoppingCartContext=createContext()
     ```
+
+    
+
+    ##### 封装并暴露2个基础的函数**ShoppingCartProvider** 和**useShoppingCart**，用来提供数据和其他组件使用数据
+
+    ```tsx
+    export function ShoppingCartProvider({ children }) {
+    return (
+        <shoppingCartContext.Provider
+          value={{ }} >
+          {children}
+        </shoppingCartContext.Provider>
+      );
+    }
+    ```
+
+    ```tsx
+    export function useShoppingCart() {
+      return useContext(shoppingCartContext);
+    }
     ```
 
     
 
     
 
+2. #### 分析业务需求：sortItem 组件中，需要每个sortItem的数量quantity，以及增减数量和移除的方法，需要添加但对应按钮中。
+
+    #### 所以，所有功能都在操作每个sortItem的数量quantity，设计成将每个sortItem的id和quantity存储到shoppingCartContext.txs组件状态中，创建4个方法，get，increase，decrease，和remove来更新状态，并将4个方法作为shoppingCartContext对象的参数，传递出去，sortItem 组件通过使用useShoppingCart() 方法得到参数，并使用在对应的位置和按钮中
+
+    ##### 设置状态对象的类型
+
+    ```tsx
+    type StoreItem={
+    id:number,
+    quantity:number
+    }
+    ```
+
+    ##### ShoppingCartProvider函数中创建状态对象cartItems, 并设置其类型，初始化状态（用于测试）
+
+    ```tsx
+    export function ShoppingCartProvider({ children }) {
+    const [cartItems, setCartItems] = useState<CartItem[]>([
+        { id: 1, quantity: 1 },
+        { id: 2, quantity: 2 },
+         { id: 3, quantity: 4 },
+      ]);
+    return (
+        <shoppingCartContext.Provider
+          value={{ }} >
+          {children}
+        </shoppingCartContext.Provider>
+      );
+    }
+    ```
+
+    ##### 设置shoppingCartContext对象的类型
+
+    ```tsx
+    type shoppingCartContextProps = {
+      getItemQuantity: (id: number) => number;
+      increaseItemQuantity: (id: number) => void;
+      decreaseItemQuantity: (id: number) => void;
+      removeFromCart: (id: number) => void;
+    };
+    ```
+
+    ShoppingCartProvider函数中 value属性中传递shoppingCartContex
+
+    ```tsx
+    export function ShoppingCartProvider({ children }) {
+    const [cartItems, setCartItems] = useState<CartItem[]>([
+        { id: 1, quantity: 1 },
+        { id: 2, quantity: 2 },
+         { id: 3, quantity: 4 },
+      ]);
+    return (
+        <shoppingCartContext.Provider
+           value={{
+            getItemQuantity,
+            increaseItemQuantity,
+            decreaseItemQuantity,
+            removeFromCart,
+          }} >
+          {children}
+        </shoppingCartContext.Provider>
+      );
+    }
+    ```
+
+3. #### ShoppingCartProvider组件函数使用：使用ShoppingCartProvider包裹整个App子组件，这样能将shoppingCartContext参数传递给所有的子组件
+
+    ##### shoppingCartContext.txs组件中设置ShoppingCartProvider函数的参数类型
+
+    ```tsx
+    type ShoppingCartProviderProps = {
+      children: ReactNode;
+    };
+    ```
+
+    ##### ShoppingCartProvider函数中使用该类型
+
+    ```tsx
+    export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
+        ...
+    }
+    ```
+
+    ##### App组件使用ShoppingCartProvider包裹所以子组件
+
+    ```tsx
+    function App() {
+      return (
+        <ShoppingCartProvider>
+          <Navbar></Navbar>
+          <Container>
+            <Routes>
+              <Route path="/" element={<Home />}>
+                HOME
+              </Route>
+              <Route path="/about" element={<About />}>
+                About
+              </Route>
+              <Route path="/store" element={<Store />}>
+                Store
+              </Route>
+            </Routes>
+          </Container>
+        </ShoppingCartProvider>
+      );
+    }
+    ```
+
     
 
+4. #### 完成4个方法的逻辑
+
+    ##### ShoppingCartProvider函数中分别创建4个方法，用来获取和更新组件的状态
+
+    ```tsx
+    export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
+      const [cartItems, setCartItems] = useState<CartItem[]>([
+        // { id: 1, quantity: 1 },
+        // { id: 2, quantity: 2 },
+        // { id: 3, quantity: 4 },
+      ]);
+        
+      // 传递给StoreItem组件的回调函数
+          // 获取数量
+      const getItemQuantity = (id: number) => {
+        return cartItems.find((item) => item.id === id)?.quantity || 0;
+      };
+         // 增加数量
+      const increaseItemQuantity = (id: number) => {
+        setCartItems((cartItems) => {
+          if (!cartItems.find((item) => item.id === id)) {
+            return [...cartItems, { id, quantity: 1 }];
+          } else {
+            return cartItems.map((item) => {
+              if (item.id === id) return { ...item, quantity: item.quantity + 1 };
+              else return item;
+            });
+          }
+        });
+      };
+    	  // 减少数量
+      const decreaseItemQuantity = (id: number) => {
+        setCartItems((cartItems) => {
+          if (cartItems.find((item) => item.id === id)?.quantity === 1) {
+            return cartItems.filter((item) => item.id !== id);
+          } else {
+            return cartItems.map((item) => {
+              if (item.id === id) {
+                return { ...item, quantity: item.quantity - 1 };
+              } else return item;
+            });
+          }
+        });
+      };
+          // 移除item
+      const removeFromCart = (id: number) => {
+        setCartItems((cartItems) => {
+          return cartItems.filter((item) => item.id !== id);
+        });
+      };
+    
+      return (
+        <shoppingCartContext.Provider
+          value={{
+            getItemQuantity,
+            increaseItemQuantity,
+            decreaseItemQuantity,
+            removeFromCart,
+          }}
+        >
+          {children}
+        </shoppingCartContext.Provider>
+      );
+    }
+    ```
+
+    
+
+5. StoreItem组件使用**useShoppingCart**()函数，获得对应的shoppingCartContext传递的参数，并使用
+
+    ```tsx
+    export default function StoreItem({ id, name, imgUrl, price }: StoreItemProps) {
+      const {
+        getItemQuantity, increaseItemQuantity,decreaseItemQuantity,removeFromCart} = useShoppingCart();
+        
+      let quantity = getItemQuantity(id);
+      return (
+        <Card className="h-100">
+        ...
+          <Card.Body>
+            <Card.Title className="d-flex justify-content-between align-items-center">
+            ...
+            </Card.Title>
+            {quantity === 0 ? (
+              <Button
+                className="w-100 mt-auto" onClick={() => { increaseItemQuantity(id);}}> + Add{" "}</Button>
+            ) : (
+              <div className="d-flex flex-column justify-content-center align-items-center gap-1">
+                <div>
+                  <Button onClick={() => { decreaseItemQuantity(id);}} > - </Button>{" "}
+                  {quantity}{" "}
+                  <Button onClick={() => {increaseItemQuantity(id);}} > + </Button>
+                </div>
+                <Button variant="danger" onClick={() => {removeFromCart(id);}}>remove</Button>
+              </div>
+            )}
+          </Card.Body>
+        </Card>
+      );
+              
+    ```
+
+    
+
+#### 购物车列表的显示以及移除
+
+#### localStorage本地缓存的使用
+
+1. #### 
 
 
+4. 
+
+    
