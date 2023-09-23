@@ -1,30 +1,23 @@
+import React from "react";
 import { Container } from "react-bootstrap";
-import Navbar from "./component/Navbar";
 import { Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Store from "./pages/Store";
-import { ShoppingCartProvider } from "./context/ShoppingCartContext";
+import NavBar from "./components/NavBar";
+import { ShoppingCartContextProvider } from "./contex/useShoppingCart";
 
-function App() {
+export default function App() {
   return (
-    <ShoppingCartProvider>
-      <Navbar></Navbar>
+    <ShoppingCartContextProvider>
+      <NavBar />
       <Container>
         <Routes>
-          <Route path="/" element={<Home />}>
-            HOME
-          </Route>
-          <Route path="/about" element={<About />}>
-            About
-          </Route>
-          <Route path="/store" element={<Store />}>
-            Store
-          </Route>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/store" element={<Store />} />
         </Routes>
       </Container>
-    </ShoppingCartProvider>
+    </ShoppingCartContextProvider>
   );
 }
-
-export default App;
